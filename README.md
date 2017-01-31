@@ -12,12 +12,13 @@ This is a Dockerfile to build a container image for NGINX and PHP7 in FPM with d
 
 ## Building and pushing to dockerhub
 
-To push a new version to hub.docker.com
 ```
-make TAG=x.x.x taggedpush"
+make container
+make push
+make VERSION=0.3.0 container
+make VERSION=0.3.0 push
+make clean
 ```
-
-If you omit setting the TAG on the build, it will try to use the branch you're on as the tag.
 
 ## Running
 To simply run the container:
