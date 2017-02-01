@@ -6,7 +6,7 @@
 #PKG := github.com/drud/docker.nginx-php-fpm
 
 # Docker repo for a push
-DOCKER_REPO ?= drud/nginx-php-fpm-local
+DOCKER_REPO ?= drud/nginx-php-fpm7-local
 
 # Upstream repo used in the Dockerfile
 UPSTREAM_REPO ?= drud/nginx-php-fpm7:0.1.0
