@@ -10,4 +10,5 @@ test:
         # docker login is required because the images derive from private image
         - echo "$DOCKER_EMAIL" | docker login -u $DOCKER_USER -p $DOCKER_PASS
         - make container
-        - docker run -it $(cat .docker_image)  php --version | grep "^PHP 7"
+        # Complexity in getting name of docker image is result of shift in contents of .docker_image
+        - docker run -it $(sed 's/^.*drud/drud/' < .docker_image | sed 's/ .*$//')  php --version | grep "^PHP 7"
