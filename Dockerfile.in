@@ -34,5 +34,5 @@ RUN sed -i -e "s/display_errors = Off/display_errors = On/g" ${PHP_INI} && \
     sed -i -e "s/track_errors = Off/track_errors = On/g" ${PHP_INI} && \
     sed -i -e "s/opcache.revalidate_freq=2/opcache.revalidate_freq=0/g" ${PHP_INI}
 
-
+VOLUME /var/log/nginx
 EXPOSE 443 80 8025
