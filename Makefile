@@ -8,15 +8,11 @@
 # Docker repo for a push
 DOCKER_REPO ?= drud/nginx-php-fpm7-local
 
-# Upstream repo used in the Dockerfile
-NGINX_LOCAL_UPSTREAM_FPM7_REPO_TAG ?= v0.4.2
-UPSTREAM_REPO ?= drud/nginx-php-fpm7:$(NGINX_LOCAL_UPSTREAM_FPM7_REPO_TAG)
-
 # Top-level directories to build
 #SRC_DIRS := filexs drudapi secrets utils
 
 # Optional to docker build
-DOCKER_ARGS = --build-arg MAILHOG_VERSION=0.2.1
+DOCKER_ARGS = --build-arg DRUSH_VERSION=8.1.15 --build-arg NGINX_VERSION=1.12.1-1~jessie --build-arg WP_CLI_VERSION=1.3.0 --build-arg MAILHOG_VERSION=1.0.0
 
 # VERSION can be set by
   # Default: git tag
@@ -42,13 +38,4 @@ include build-tools/makefile_components/base_push.mak
 #include build-tools/makefile_components/base_test_python.mak
 
 test: container
-	@docker stop web-local-test || true
-	@docker rm web-local-test || true
-	docker run -p 1081:80 -e "DOCROOT=docroot" -d --name web-local-test -d `awk '{print $$1}' .docker_image`
-	CONTAINER_NAME=web-local-test test/containercheck.sh
-	docker exec -it web-local-test php --version | grep "PHP 7"
-	curl -s localhost:1081/test/test-email.php | grep "Test email sent"
-	@docker stop web-local-test && docker rm web-local-test
-	docker run -p 1081:80 -e "DOCROOT=potato" -v `pwd`/test/test-custom.conf:/var/www/html/.ddev/nginx-site.conf -d --name web-local-test -d `awk '{print $$1}' .docker_image`
-	docker exec -it web-local-test cat /etc/nginx/sites-available/nginx-site.conf | grep "docroot is /var/www/html/potato in custom conf"
-	@docker stop web-local-test && docker rm web-local-test
+	test/containertest.sh
