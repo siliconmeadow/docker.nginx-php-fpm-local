@@ -18,8 +18,7 @@ CONTAINER_NAME=web-local-test ./test/containercheck.sh
 
 function cleanup {
 	echo "Removing web-local-test"
-	docker stop web-local-test 2>/dev/null
-	docker rm web-local-test 2>/dev/null
+	docker rm -f web-local-test 2>/dev/null
 }
 trap cleanup EXIT
 
