@@ -2,6 +2,9 @@
 set -x
 set -o errexit nounset pipefail
 
+# If DDEV_PHP_VERSION isn't set, use a reasonable default
+DDEV_PHP_VERSION=${DDEV_PHP_VERSION:-$PHP_DEFAULT_VERSION}
+
 # Update full path NGINX_DOCROOT if DOCROOT env is provided
 if [ -n "$DOCROOT" ] ; then
     export NGINX_DOCROOT="/var/www/html/$DOCROOT"
@@ -19,6 +22,10 @@ if [ -n "$DDEV_PHP_VERSION" ] ; then
 	export PHP_INI=/etc/php/${DDEV_PHP_VERSION}/fpm/php.ini
 fi
 
+if [ "$DDEV_PROJECT_TYPE" = "backdrop" ] ; then
+	mkdir -p ~/.drush/commands && ln -s ~/backdrop_drush_commands ~/.drush/commands/backdrop
+fi
+
 # Substitute values of environment variables in nginx configuration
 envsubst "$NGINX_SITE_VARS" < "$NGINX_SITE_TEMPLATE" > /etc/nginx/sites-enabled/nginx-site.conf
 
@@ -33,9 +40,9 @@ chown -R nginx:nginx /var/log/nginx
 
 # Display PHP errors or not
 if [[ "$ERRORS" != "1" ]] ; then
- echo php_flag[display_errors] = off >> /etc/php/7.1/fpm/php-fpm.conf
+ echo php_flag[display_errors] = off >> /etc/php/$DDEV_PHP_VERSION/fpm/php-fpm.conf
 else
- echo php_flag[display_errors] = on >> /etc/php/7.1/fpm/php-fpm.conf
+ echo php_flag[display_errors] = on >> /etc/php/$DDEV_PHP_VERSION/fpm/php-fpm.conf
 fi
 
 /usr/bin/supervisord -c /etc/supervisord.conf

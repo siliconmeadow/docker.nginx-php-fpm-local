@@ -1,6 +1,6 @@
 FROM bitnami/minideb:jessie
 
-ENV PHP_VERSIONS="5.6 7.0 7.1"
+ENV PHP_VERSIONS="5.6 7.0 7.1 7.2"
 ENV PHP_DEFAULT_VERSION="7.1"
 ENV PHP_INI=/etc/php/$PHP_DEFAULT_VERSION/fpm/php.ini
 
@@ -8,6 +8,7 @@ ENV NGINX_VERSION=1.12.1-1~jessie
 ENV DRUSH_VERSION=8.1.15
 ENV WP_CLI_VERSION=1.4.1
 ENV MAILHOG_VERSION=1.0.0
+ENV BACKDROP_DRUSH_VERSION=0.0.6
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM xterm
@@ -51,9 +52,8 @@ RUN apt-get -qq update && \
 		zip \
 		unzip \
 		libpcre3 && \
-	for v in php${PHP_VERSIONS}; do apt-get -qq install --no-install-recommends --no-install-suggests -y $v-curl $v-cgi $v-cli $v-common $v-fpm $v-gd $v-intl $v-json $v-mysql $v-mbstring  $v-opcache $v-soap $v-readline $v-xml $v-xmlrpc $v-zip; done && \
+	for v in php${PHP_VERSIONS}; do apt-get -qq install --no-install-recommends --no-install-suggests -y $v-curl $v-cgi $v-cli $v-common $v-fpm $v-gd $v-intl $v-json $v-mysql $v-mbstring  $v-opcache $v-soap $v-readline $v-xdebug $v-xml $v-xmlrpc $v-zip; done && \
 	for v in php5.6 php7.0 php7.1; do apt-get -qq install --no-install-recommends --no-install-suggests -y $v-mcrypt; done && \
-	apt-get -qq install --no-install-recommends --no-install-suggests -y php-xdebug && \
     apt-get -qq autoremove -y && \
     apt-get -qq clean -y && \
 	rm -rf /var/lib/apt/lists/* && \
@@ -63,7 +63,11 @@ RUN curl -sSL "https://github.com/mailhog/MailHog/releases/download/v${MAILHOG_V
 RUN curl -sSL "https://github.com/wp-cli/wp-cli/releases/download/v${WP_CLI_VERSION}/wp-cli-${WP_CLI_VERSION}.phar" -o /usr/local/bin/wp-cli
 RUN composer global require drush/drush:${DRUSH_VERSION} && ln -s /root/.composer/vendor/bin/drush /usr/local/bin/drush
 
+RUN curl -sSL "https://drupalconsole.com/installer" -L -o /usr/local/bin/drupal && chmod +x /usr/local/bin/drupal
+
 ADD files /
+
+RUN curl -sSL https://github.com/backdrop-contrib/drush/releases/download/${BACKDROP_DRUSH_VERSION}/drush.zip -o /tmp/backdrop_drush.zip && unzip /tmp/backdrop_drush.zip -d ~/backdrop_drush_commands
 
 RUN mkdir -p /etc/nginx/sites-enabled && \
     touch /var/log/php-fpm.log && \
