@@ -20,15 +20,23 @@ trap cleanup EXIT
 
 cleanup
 
+# Using a static composer dir saves the composer downloads for each php version.
+composercache=/tmp/composer_$$
+mkdir -p $composercache
+
 for v in 5.6 7.0 7.1 7.2; do
 	echo "starting container for tests on php$v"
-	CONTAINER=$(docker run -p $HOST_PORT:$CONTAINER_PORT -e "DOCROOT=docroot" -e "DDEV_PHP_VERSION=$v" -d --name $CONTAINER_NAME -d $DOCKER_IMAGE)
+
+	CONTAINER=$(docker run -p $HOST_PORT:$CONTAINER_PORT -e "DOCROOT=docroot" -e "DDEV_PHP_VERSION=$v" -d --name $CONTAINER_NAME -v "$composercache:/root/.composer/cache" -d $DOCKER_IMAGE)
 	./test/containercheck.sh
 	curl --fail localhost:$HOST_PORT/test/phptest.php
 	curl -s localhost:$HOST_PORT/test/test-email.php | grep "Test email sent"
 	docker exec -it $CONTAINER php --version | grep "PHP $v"
 	docker exec -it $CONTAINER drush --version
 	docker exec -it $CONTAINER wp --version
+
+	# Make sure composer create-project is working.
+	docker exec -it $CONTAINER composer create-project drupal-composer/drupal-project:8.x-dev my-drupal8-site --stability dev --no-interaction
 
 	echo "testing error states for php$v"
 	# These are just the standard nginx 403 and 404 pages
