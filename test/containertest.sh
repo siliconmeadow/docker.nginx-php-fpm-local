@@ -38,6 +38,9 @@ for v in 5.6 7.0 7.1 7.2; do
 	# Make sure composer create-project is working.
 	docker exec -it $CONTAINER composer create-project drupal-composer/drupal-project:8.x-dev my-drupal8-site --stability dev --no-interaction
 
+    # Default settings for assert.active should be 1
+    docker exec -it $CONTAINER_NAME php -i | grep "assert.active.*=> 1 => 1"
+
 	echo "testing error states for php$v"
 	# These are just the standard nginx 403 and 404 pages
 	curl localhost:$HOST_PORT/ | grep "403 Forbidden"
@@ -88,7 +91,10 @@ for project_type in drupal6 drupal7 drupal8 typo3 backdrop wordpress default; do
 	docker rm -f $CONTAINER
 done
 
-echo "testing use of custom nginx config"
-docker run -p $HOST_PORT:$CONTAINER_PORT -e "DOCROOT=potato" -v `pwd`/test/test-custom.conf:/var/www/html/.ddev/nginx-site.conf -d --name $CONTAINER_NAME -d $DOCKER_IMAGE
-docker exec -it $CONTAINER_NAME cat /etc/nginx/sites-enabled/nginx-site.conf | grep "docroot is /var/www/html/potato in custom conf"
-
+echo "testing use of custom nginx and php configs"
+docker run -p $HOST_PORT:$CONTAINER_PORT -e "DOCROOT=potato" -e "DDEV_PHP_VERSION=7.2" -v $PWD/test/testdata:/mnt/ddev_config -d --name $CONTAINER_NAME -d $DOCKER_IMAGE
+docker exec -it $CONTAINER_NAME grep "docroot is /var/www/html/potato in custom conf" /etc/nginx/sites-enabled/nginx-site.conf
+# Make sure that PHP has picked up our config change.
+docker exec -it $CONTAINER_NAME php --re xdebug | grep "xdebug does not exist"
+# With overridden value we should have assert.active=0, not the default
+docker exec -it $CONTAINER_NAME php -i | grep "assert.active.*=> 0 => 0"
